@@ -125,7 +125,7 @@ finger_setup = dbc.Card(
     ]
 )
 
-app.layout = html.Div([
+app.layout = html.Div([ # store
     dbc.Container([
         dbc.Row([
             dbc.Col(html.H1("Generate a json for the Hand Generator", style={'textAlign':'center'}))
