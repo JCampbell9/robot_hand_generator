@@ -1,8 +1,8 @@
 # visit http://127.0.0.1:8050/ in your web browser.
 
 import dash
-from dash import Dash, html, dcc, Input, Output
 import dash_bootstrap_components as dbc
+from dash import Dash, Input, Output, dcc, html
 
 external_stylesheets = [dbc.themes.LUX]
 app = Dash(__name__, external_stylesheets=external_stylesheets)
@@ -26,11 +26,12 @@ active_finger = 0
 active_joint = 0
 joints = [1,2,3]
 figner_orientation = 20
-finger_dictionary = {'finger0':{'radius':0, 'angle': 0, 'orientation':0}}
+finger_dictionary = {'finger0':{'radius':0, 'angle': 0, 'orientation':0, 'number_segment':1}}
+
 hand_name = ''
 palm_dimensions = {'width':0, 'height':0, 'thickness':0}
 
-controls1 = dbc.Card(
+palm_setup = dbc.Card(
     [
         html.Div([
             dbc.Label("Enter the name of the hand: (use _ instead of a spaces)"),
@@ -92,7 +93,7 @@ controls1 = dbc.Card(
 
     ], body=True)
 
-controls2 = dbc.Card(
+finger_setup = dbc.Card(
     [
         html.Div([
             dbc.InputGroup([
@@ -115,7 +116,10 @@ controls2 = dbc.Card(
                 ])
             ]),
             dbc.InputGroup([
-                dbc.InputGroupText('Joint Style')
+                dbc.InputGroupText('Joint Style'),
+                dbc.Select(id='active joint', options=[
+                    {'label': 'pin joint', 'value': 'pin'}
+                ])
             ])
         ])
     ]
@@ -129,13 +133,13 @@ app.layout = html.Div([
         dbc.Row([
             dbc.Col([html.Div('image 1', id="image1"), html.Div('image 3?')], md=4),
             dbc.Col([html.Div('image 2', id="image2"), html.Div('image 4?')], md=4),
-            dbc.Col(controls1, md=4,  )
+            dbc.Col(palm_setup, md=4,  )
         ]),
         dbc.Row([dbc.Col([dbc.Label(' ')])]),
         dbc.Row([
             dbc.Col(html.Div("Image 3", id="image3"), md=4),
             dbc.Col(html.Div("Image 4", id="image4"), md=4),
-            dbc.Col(controls2, md=4)
+            dbc.Col(finger_setup, md=4)
         ])
     ])
 
@@ -150,7 +154,7 @@ def update_number_fingers(input_value):
     global finger_dictionary
     finger_list = []
     for finger in range(input_value):
-        finger_dictionary[f'finger{finger}'] = {'radius': 0, 'angle': 0, 'orientation': 0}
+        finger_dictionary[f'finger{finger}'] = {'radius': 0, 'angle': 0, 'orientation': 0, 'number_segment':1}
         finger_list.append({"label": f'Finger {finger}', "value": finger})
     
     return finger_list, finger_list
@@ -193,6 +197,7 @@ def update_hand_name(name):
     Output('finger orientation', 'value'),
     Output('finger radius', 'value'),
     Output('finger angle', 'value'),
+    # Output('').
     Input('active finger', 'value')
 )
 def update_displayed_values_for_finger(input_value):
@@ -208,8 +213,14 @@ def update_displayed_values_for_finger(input_value):
     Input('active finger2', 'value')
 )
 def update_finger2(active_finger1, active_finger2):
-    ctx = dash.callback_context
-    ctx.triggered[0]["prop_id"].split(".")[0]
+    global active_finger
+    if active_finger1 != active_finger:
+        active_finger = active_finger1
+    else:
+        active_finger = active_finger2
+
+    # ctx = dash.callback_context
+    # ctx.triggered[0]["prop_id"].split(".")[0]
     return active_finger, active_finger
 
 
